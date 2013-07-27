@@ -54,7 +54,7 @@ signString <- function(str, key, method) {
   sigFunc(key, str)
 }
 
-genNonce <- function(len = 15L + sample(1:16, 1L)) {
+genNonce <- function(len = sample.int(16:31,1) {
   ## Get a random sequence of characters.
   ## Nonce - number used only once.
   els <- c(letters, LETTERS, 0:9, "_")
