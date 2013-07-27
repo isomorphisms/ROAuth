@@ -4,27 +4,40 @@ signRequest  <- function(url, params, consumerKey, consumerSecret,
                          timestamp = Sys.time(),
                          escapeFun = encodeURI,
                          handshakeComplete=TRUE) {
-  ## Sign an request made up of the URL, the parameters as a named character
+  ## Sign a request made up of the URL, the parameters as a named character
   ## vector the consumer key and secret and the token and token secret.
-  httpMethod <- toupper(httpMethod)
-  signMethod <- toupper(signMethod)
-
+  
+  ## OAuth wants the following things:
+  ##   - consumer key (user supplies)
+  ##   - timestamp
+  ##   - nonce
+  ##   - signature computed with these (signWithHMAC)
+  
+  
+  
+  # gathering parameters to be sent to the OAuth request URL
   params["oauth_nonce"] <- nonce
   params["oauth_timestamp"] <- as.integer(timestamp)
+  params["oauth_consumer_key"] <- consumerKey
 
   token <- oauthKey
   if(!is.null(token) && !is.na(token) && token != "")
      params["oauth_token"] <- token
 
-  params["oauth_consumer_key"] <- consumerKey
+  
+  
+  httpMethod <- toupper(httpMethod)
+  signMethod <- toupper(signMethod)
   params["oauth_signature_method"] <- switch(signMethod,
                                              HMAC = 'HMAC-SHA1',
                                              RSA  = 'RSA-SHA1',
                                              text = 'PLAINTEXT',
                                              stop("Unsupported signature method: ", signMethod)
                                              )
+
   params["oauth_version"] <- '1.0'
 
+          #default escapeFun: encodeURI
   args <- escapeFun(normalizeParams(params, escapeFun), post.amp = TRUE)
 
   if(is.null(oauthSecret))
@@ -32,16 +45,26 @@ signRequest  <- function(url, params, consumerKey, consumerSecret,
 
   okey <- paste(sapply(c(consumerSecret, oauthSecret), escapeFun),
                 collapse = "&")
+                
   ## note that we don't escape the args string again.
   odat <- paste(c(sapply(c(httpMethod, url), escapeFun), args),
                 collapse = "&")
 
-  sig <- signString(odat, okey, signMethod)
 
+  sig <- signString(odat, okey, signMethod)
   params["oauth_signature"] <- sig
-  ##
+  
   return(params)
 }
+
+
+
+
+
+
+
+## functions which were called above
+## It's less messy to define them down here.
 
 signString <- function(str, key, method) {
   ## Perform the actual computation to get the signature of the data
@@ -60,6 +83,8 @@ genNonce <- function(len = 15L + sample(1:16, 1L)) {
   els <- c(letters, LETTERS, 0:9, "_")
   paste(sample(els, len, replace = TRUE), collapse = "")
 }
+
+
 
 signWithHMAC <- function(key, data) {
   ## From Ozaki Toru's code at https://gist.github.com/586468
@@ -88,9 +113,11 @@ signWithHMAC <- function(key, data) {
   base64(mac(outerpad, mac(innerpad, charToRaw(data))))[1]
 }
 
+
 signWithRSA <- function(key, data) {
   stop("RSA signature not implemented")
 }
+
 
 signWithPlaintext <- function(key, data) {
   key
