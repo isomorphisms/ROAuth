@@ -4,7 +4,7 @@ signRequest  <- function(url, params, consumerKey, consumerSecret,
                          timestamp = Sys.time(),
                          escapeFun = encodeURI,
                          handshakeComplete=TRUE) {
-  ## Sign an request made up of the URL, the parameters as a named character
+  ## Sign a request made up of the URL, the parameters as a named character
   ## vector the consumer key and secret and the token and token secret.
   httpMethod <- toupper(httpMethod)
   signMethod <- toupper(signMethod)
