@@ -58,7 +58,7 @@ genNonce <- function(len = sample.int(16:31,1) {
   ## Get a random sequence of characters.
   ## Nonce - number used only once.
   els <- c(letters, LETTERS, 0:9, "_")
-  paste(sample(els, len, replace = TRUE), collapse = "")
+  paste0(sample(els, len, replace = TRUE))
 }
 
 signWithHMAC <- function(key, data) {
